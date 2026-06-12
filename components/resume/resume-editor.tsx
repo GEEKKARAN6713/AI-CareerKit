@@ -12,6 +12,7 @@ import { EducationSection } from "@/components/resume/education-section";
 import { SkillsSection } from "@/components/resume/skills-section";
 import { ProjectsSection } from "@/components/resume/projects-section";
 import { ResumePreview } from "@/components/resume/resume-preview";
+import { AtsScorePanel } from "@/components/resume/ats-score-panel";
 
 const sections = [
   { key: "details", label: "Details" },
@@ -70,7 +71,8 @@ export function ResumeEditor({ resume }: { resume: ResumeWithRelations }) {
           </Card>
         </div>
 
-        <div className="min-w-0">
+        <div className="min-w-0 space-y-4">
+          <AtsScorePanel resumeId={resume.id} />
           <ResumePreview resume={resume} />
         </div>
       </div>

@@ -18,8 +18,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  resumes   Resume[]
-  portfolio Portfolio?
+  resumes       Resume[]
+  portfolio     Portfolio?
+  aiGenerations AiGeneration[]
 
   @@map("users")
 }
@@ -105,6 +106,22 @@ model Project {
   createdAt DateTime @default(now())
 
   @@map("projects")
+}
+
+model AiGeneration {
+  id           String   @id @default(cuid())
+  type         String // BULLETS | SUMMARY | ATS_SCORE | LINKEDIN_HEADLINE | LINKEDIN_ABOUT | CAREER_SUGGESTIONS
+  input        String
+  output       String
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("ai_generations")
 }
 
 model Portfolio {

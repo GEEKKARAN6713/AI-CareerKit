@@ -6,8 +6,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Sparkles, Trash2 } from "lucide-react";
 import type { ResumeWithRelations } from "@/types/resume";
+import { aiGenerate } from "@/lib/ai/client";
 import { upsertExperience, deleteExperience } from "@/lib/actions/resumes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,12 +41,43 @@ export function ExperienceSection({ resume }: { resume: ResumeWithRelations }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isDeleting, startDelete] = useTransition();
 
+  const [aiLoading, setAiLoading] = useState(false);
+
   const {
     register,
     handleSubmit,
     reset,
+    getValues,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: emptyValues });
+
+  async function generateBullets() {
+    const role = getValues("role");
+    const company = getValues("company");
+    const description = getValues("bulletsText") ?? "";
+
+    if (!role || description.trim().length < 10) {
+      toast.error("Fill in the role and add some rough notes in the bullets field first.");
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      const output = await aiGenerate<string>({
+        type: "bullets",
+        role,
+        company: company || undefined,
+        description,
+      });
+      setValue("bulletsText", output);
+      toast.success("Bullets generated — review and edit before saving.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "AI generation failed.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   function startEdit(id: string) {
     const exp = resume.experiences.find((e) => e.id === id);
@@ -172,7 +204,19 @@ export function ExperienceSection({ resume }: { resume: ResumeWithRelations }) {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="bulletsText">Bullet points (one per line)</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="bulletsText">Bullet points (one per line)</Label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={aiLoading}
+              onClick={generateBullets}
+            >
+              {aiLoading ? <Loader2 className="animate-spin" /> : <Sparkles />}
+              Generate with AI
+            </Button>
+          </div>
           <Textarea
             id="bulletsText"
             rows={5}
