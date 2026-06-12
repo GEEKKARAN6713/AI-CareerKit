@@ -18,7 +18,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  resumes Resume[]
+  resumes   Resume[]
+  portfolio Portfolio?
 
   @@map("users")
 }
@@ -98,7 +99,35 @@ model Project {
   resumeId String?
   resume   Resume? @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 
+  portfolioId String?
+  portfolio   Portfolio? @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 
   @@map("projects")
+}
+
+model Portfolio {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  displayName String
+  tagline     String?
+  bio         String?
+  skills      String[]
+  github      String?
+  linkedin    String?
+  twitter     String?
+  websiteUrl  String?
+  theme       String   @default("minimal") // minimal | gradient | midnight
+  published   Boolean  @default(true)
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projects Project[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("portfolios")
 }
