@@ -23,8 +23,10 @@ export const authConfig = {
       return token;
     },
     session({ session, token }) {
-      if (session.user && token.id) session.user.id = token.id;
-      return session;
-    },
+  if (session.user && token.id) {
+    session.user.id = String(token.id);
+  }
+  return session;
+},
   },
 } satisfies NextAuthConfig;
